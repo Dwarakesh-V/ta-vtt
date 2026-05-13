@@ -1,0 +1,1 @@
+adb shell am start -a android.intent.action.CALL -d tel:xxxxxxxxxx && sleep 10 && adb shell input keyevent 6

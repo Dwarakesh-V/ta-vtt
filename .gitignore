@@ -2,3 +2,4 @@ whisper-large-v3
 *.mpeg
 *.wav
 *.mp3
+call.sh
