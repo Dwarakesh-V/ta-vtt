@@ -3,3 +3,6 @@ whisper-large-v3
 *.wav
 *.mp3
 call.sh
+.venv
+NeMo
+*.nemo

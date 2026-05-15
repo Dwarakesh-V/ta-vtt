@@ -1,17 +1,24 @@
-from faster_whisper import WhisperModel
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-model = WhisperModel(
-    "./whisper-large-v3-ct2",
-    device="cuda",
-    compute_type="float16"
+import torch
+import nemo.collections.asr as nemo_asr
+
+print(torch.cuda.is_available())
+print(torch.cuda.get_device_name(0))
+
+model = nemo_asr.models.EncDecHybridRNNTCTCBPEModel.restore_from(
+    restore_path="indicconformer_ta.nemo",
+    map_location="cpu"
 )
 
-segments, info = model.transcribe(
-    "recording.mpeg",
-    language="ta",
-    vad_filter=True,
-    beam_size=5
+model.freeze()
+model = model.to("cuda")
+
+result = model.transcribe(
+    ["recording2.wav"],
+    batch_size=1,
+    language_id="ta"
 )
 
-for segment in segments:
-    print(segment.text)
+print(result[0])
