@@ -1,24 +1,25 @@
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
+import whisperx
 import torch
-import nemo.collections.asr as nemo_asr
+torch.backends.cuda.matmul.allow_tf32 = True
+torch.backends.cudnn.allow_tf32 = True
 
-print(torch.cuda.is_available())
-print(torch.cuda.get_device_name(0))
+device = "cuda"
 
-model = nemo_asr.models.EncDecHybridRNNTCTCBPEModel.restore_from(
-    restore_path="indicconformer_ta.nemo",
-    map_location="cpu"
+audio_file = "recording2.wav"
+
+model = whisperx.load_model(
+    "./whisper-large-v3",
+    device,
+    compute_type="float16",
+    language="ta"
 )
 
-model.freeze()
-model = model.to("cuda")
+audio = whisperx.load_audio(audio_file)
 
 result = model.transcribe(
-    ["recording2.wav"],
-    batch_size=1,
-    language_id="ta"
+    audio,
+    batch_size=8
 )
 
-print(result[0])
+for seg in result["segments"]:
+    print(seg["text"])
