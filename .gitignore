@@ -6,3 +6,8 @@ call.sh
 .venv
 NeMo
 *.nemo
+segmentation-3.0
+speaker-diarization-3.1
+.env
+
+# Modified speaker-diarization-3.1 config.yaml || segmentation: ./segmentation-3.0/pytorch_model.bin
