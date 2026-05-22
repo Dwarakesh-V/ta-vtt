@@ -47,6 +47,20 @@ def make_call(phone):
         f"tel:{phone}"
     ])
 
+def is_call_active():
+    result = subprocess.run(
+        [
+            "adb",
+            "shell",
+            "dumpsys",
+            "telecom"
+        ],
+        capture_output=True,
+        text=True
+    )
+
+    return "ACTIVE" in result.stdout
+
 def end_call():
     subprocess.run([
         "adb",
@@ -62,7 +76,11 @@ numbers = list(pd.read_excel("numbers.xlsx")["phone"])
 
 for number in numbers:
     make_call(number)
-    time.sleep(60) # Max 1 minute call
+    for i in range(60):
+        if is_call_active(): # If call isnt active, break out
+            time.sleep(1)
+        else:
+            break
     end_call()
     time.sleep(5) # Wait for data to sync
 
