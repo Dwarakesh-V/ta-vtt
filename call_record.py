@@ -103,5 +103,6 @@ for number in numbers:
         else:
             break
     end_call()
+    # TODO: Transcribe the last mp3 file and move it to recordings_tsd (transcribed recordings)
     time.sleep(5) # Wait for data to sync
 

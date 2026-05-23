@@ -1,3 +1,1 @@
-segmentation-3.0/pytorch_model.bin
-wav2vec2-large-xlsr-53-tamil/pytorch_model.bin
 whisper-large-v2/model.bin # This must be built using ctranslate
