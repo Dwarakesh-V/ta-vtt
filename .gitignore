@@ -3,7 +3,7 @@ whisper-large-v3
 *.wav
 *.mp3
 .venv
-*.bin
+whisper-large-v2/
 *.csv
 *.xlsx
 recordings
