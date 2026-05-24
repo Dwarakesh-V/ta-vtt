@@ -11,11 +11,13 @@ import torch
 import pandas as pd
 import time
 from random import randint
+import warnings
+warnings.filterwarnings("ignore")
 
 # Audio transcription
 transcribe_model = whisperx.load_model(
     "./whisper-large-v2",
-    device="auto", 
+    device="cuda",
     compute_type="float16", 
     language="ta",
     vad_options={
@@ -23,6 +25,8 @@ transcribe_model = whisperx.load_model(
         "vad_offset": 0.363
     }
 )
+
+print("Loaded whisper model")
 
 # Text model
 language_model_name = "./Qwen3-8B"
@@ -43,6 +47,8 @@ language_model = AutoModelForCausalLM.from_pretrained(
     device_map="auto",
     attn_implementation="flash_attention_2",
 )
+
+print("Loaded language model")
 
 numbers = list(pd.read_excel("numbers.xlsx")["phone"])
 
@@ -70,7 +76,7 @@ for number in numbers:
         call_vc = transcribe(path)
         content = generate_llm_out(language_model,language_tokenizer,system_prompt,call_vc)
         process_phone_csv(number,content)
-        
+
     except RecordingNotFound:
         pass
     
