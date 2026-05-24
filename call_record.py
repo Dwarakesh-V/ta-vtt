@@ -69,7 +69,7 @@ def is_call_connecting():
         text=True
     )
 
-    return any(["CONNECTING","DIALING"]) in result.stdout
+    return (any(x in result.stdout for x in ["CONNECTING", "DIALING"]), result.stdout)
 
 def is_call_active():
     result = subprocess.run(

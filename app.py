@@ -17,8 +17,8 @@ warnings.filterwarnings("ignore")
 # Audio transcription
 transcribe_model = whisperx.load_model(
     "./whisper-large-v2",
-    device="cuda",
-    compute_type="float16", 
+    device="cpu",
+    compute_type="int8", 
     language="ta",
     vad_options={
         "vad_onset": 0.800,
@@ -57,12 +57,13 @@ with open("sys_prompt.txt") as f:
 
 for number in numbers:
     make_call(number)
+    print(is_call_active())
     initmsg = False
     for i in range(60):
         if is_call_connecting() or is_call_active(): # If call isnt active, break out
             time.sleep(1)
             if is_call_active() and not initmsg:
-                play_audio("init_message.mp3")
+                play_audio("init_message.mpeg")
                 initmsg = True
         else:
             break
