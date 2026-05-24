@@ -9,6 +9,7 @@ source .venv/bin/activate
 
 pip install --upgrade pip
 pip install -r requirements.txt
+pip install flash-attn --no-build-isolation
 
 # Original dir
 ORIG_DIR="$(pwd)"
