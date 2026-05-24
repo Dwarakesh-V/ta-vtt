@@ -1,34 +1,49 @@
 import subprocess
-import pandas as pd
-import time
 from pathlib import Path
+import shutil
 import os
 
-def find_call_record_dir():
+class RecordingNotFound(Exception): # To catch calls that were not picked up
+    pass
+
+def copy_recording(phone):
     uid = os.getuid()
-    gvfs = Path(
-        f"/run/user/{uid}/gvfs"
-    ) # User space virtual filesystem path
+    gvfs = Path(f"/run/user/{uid}/gvfs")
+    mount = None
+    for item in gvfs.iterdir():
+        if item.name.startswith("mtp:host=Xiaomi_Redmi_Note_13_5G"):
+            mount = item
+            break
 
-    if not gvfs.exists():
-        return None
+    if mount is None:
+        raise Exception("Phone not connected")
 
-    for mount in gvfs.iterdir():
+    call_dir = (
+        mount
+        / "Internal shared storage"
+        / "MIUI"
+        / "sound_recorder"
+        / "call_rec"
+    )
 
-        if (mount.is_dir() and mount.name.startswith("mtp:host=Xiaomi_Redmi_Note_13_5G")):
+    recordings = Path("./recordings")
 
-            target = (
-                mount
-                / "Internal shared storage"
-                / "MIUI"
-                / "sound_recorder"
-                / "call_rec"
-            ) # Call record path
+    recordings.mkdir(
+        exist_ok=True
+    )
 
-            if target.exists():
-                return target
+    pattern = f"0091{phone}" # Indian phone numbers
 
-    return None
+    matches = [f for f in call_dir.glob("*.mp3") if pattern in f.name]
+
+    if not matches:
+        raise RecordingNotFound(f"No recording for {phone}")
+
+    latest = max(matches,key=lambda x: x.stat().st_mtime)
+    dest = recordings / latest.name
+    shutil.copy2(latest, dest)
+
+    return str(dest)
 
 def make_call(phone):
     subprocess.run([
@@ -86,23 +101,3 @@ def play_audio(audio_path):
         "-autoexit",
         f"{audio_path}"
     ])
-
-print(f"Phone mounted path: {find_call_record_dir()}")
-
-numbers = list(pd.read_excel("numbers.xlsx")["phone"])
-
-for number in numbers:
-    make_call(number)
-    initmsg = False
-    for i in range(60):
-        if is_call_connecting() or is_call_active(): # If call isnt active, break out
-            time.sleep(1)
-            if is_call_active() and not initmsg:
-                play_audio("init_message.mp3")
-                initmsg = True
-        else:
-            break
-    end_call()
-    # TODO: Transcribe the last mp3 file and move it to recordings_tsd (transcribed recordings)
-    time.sleep(5) # Wait for data to sync
-

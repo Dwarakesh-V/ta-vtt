@@ -1,0 +1,1 @@
+You will be given a poor quality tamil conversation transcription that may contain mixed languages of someone who attended a job fair but did not accept the job. You need to filter out the reason and output ONLY the reason in english, like 'Not interested in the job' or 'Salary was too low' etc. Avoid greetings or explanations.

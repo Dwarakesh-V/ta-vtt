@@ -1,1 +1,0 @@
-whisper-large-v2/model.bin # This must be built using ctranslate
