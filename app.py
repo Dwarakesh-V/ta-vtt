@@ -28,27 +28,28 @@ transcribe_model = whisperx.load_model(
 
 print("Loaded whisper model")
 
-# Text model
-language_model_name = "./Qwen3-8B"
+if torch.cuda.is_available(): # Only load language model if gpu is available with cuda
+    # Text model
+    language_model_name = "./Qwen3-8B"
 
-# 4-bit quantization
-bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_use_double_quant=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_compute_dtype=torch.bfloat16
-)
+    # 4-bit quantization
+    bnb_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_use_double_quant=True,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_compute_dtype=torch.bfloat16
+    )
 
-language_tokenizer = AutoTokenizer.from_pretrained(language_model_name)
+    language_tokenizer = AutoTokenizer.from_pretrained(language_model_name)
 
-language_model = AutoModelForCausalLM.from_pretrained(
-    language_model_name,
-    quantization_config=bnb_config,
-    device_map="auto",
-    attn_implementation="flash_attention_2",
-)
+    language_model = AutoModelForCausalLM.from_pretrained(
+        language_model_name,
+        quantization_config=bnb_config,
+        device_map="auto",
+        attn_implementation="flash_attention_2",
+    )
 
-print("Loaded language model")
+    print("Loaded language model")
 
 numbers = list(pd.read_excel("numbers.xlsx")["phone"])
 
@@ -78,7 +79,7 @@ for number in numbers:
         time.sleep(2) # Copy wait
 
         call_vc = transcribe(path)
-        content = generate_llm_out(language_model,language_tokenizer,system_prompt,call_vc)
+        content = generate_llm_out(language_model,language_tokenizer,system_prompt,call_vc) if torch.cuda.is_available() else call_vc
         process_phone_csv(number,content)
 
     except RecordingNotFound:
