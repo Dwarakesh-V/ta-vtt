@@ -1,7 +1,7 @@
 # Custom
 from transcribe import transcribe
 from generate import generate_llm_out
-from call_record import make_call, is_call_connecting, is_call_active, end_call, play_audio, copy_recording, RecordingNotFound
+from call_record import make_call, call_status, end_call, play_audio, copy_recording, RecordingNotFound
 from write_to_csv import process_phone_csv
 
 # Libraries
@@ -57,17 +57,20 @@ with open("sys_prompt.txt") as f:
 
 for number in numbers:
     make_call(number)
-    print(is_call_active())
+    print(f"Calling {number}")
+    time.sleep(2) # Delay for call to happen
     initmsg = False
     for i in range(60):
-        if is_call_connecting() or is_call_active(): # If call isnt active, break out
+        if call_status() in [1,2]: # If call isnt active, break out
             time.sleep(1)
-            if is_call_active() and not initmsg:
-                play_audio("init_message.mpeg")
+            if call_status() == 2 and not initmsg:
+                play_audio("init_message.m4a")
                 initmsg = True
         else:
+            print("Call has ended")
             break
     end_call()
+    print("Call has ended")
     time.sleep(5) # Wait for write complete
 
     try:
@@ -79,6 +82,7 @@ for number in numbers:
         process_phone_csv(number,content)
 
     except RecordingNotFound:
+        print("Recording not found")
         pass
     
     time.sleep(randint(10,20))

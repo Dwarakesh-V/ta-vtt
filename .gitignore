@@ -11,6 +11,7 @@ recordings_tsd
 *.mpeg
 *.wav
 *.mp3
+*.m4a
 
 # Language models
 whisper-large-v2/

@@ -32,8 +32,7 @@ def copy_recording(phone):
         exist_ok=True
     )
 
-    pattern = f"0091{phone}" # Indian phone numbers
-
+    pattern = f"{phone}"
     matches = [f for f in call_dir.glob("*.mp3") if pattern in f.name]
 
     if not matches:
@@ -57,33 +56,30 @@ def make_call(phone):
         f"tel:{phone}"
     ])
 
-def is_call_connecting():
-    result = subprocess.run(
-        [
-            "adb",
-            "shell",
-            "dumpsys",
-            "telecom"
-        ],
-        capture_output=True,
-        text=True
+def call_status():
+    cmd = (
+        "adb shell dumpsys telecom | "
+        "grep -iE 'SET_DIALING|SET_ACTIVE|SET_CONNECTING|SET_DISCONNECTED' | "
+        "tail -1"
     )
 
-    return (any(x in result.stdout for x in ["CONNECTING", "DIALING"]), result.stdout)
-
-def is_call_active():
     result = subprocess.run(
-        [
-            "adb",
-            "shell",
-            "dumpsys",
-            "telecom"
-        ],
+        cmd,
+        shell=True,
         capture_output=True,
-        text=True
+        text=True,
+        timeout=5
     )
 
-    return "ACTIVE" in result.stdout
+    line = result.stdout.strip()
+
+    if "SET_ACTIVE" in line:
+        return 2
+    elif "SET_DIALING" in line:
+        return 1
+    else:
+        return 0
+
 
 def end_call():
     subprocess.run([
@@ -95,9 +91,14 @@ def end_call():
     ]) # If the call has already ended, this does nothing
 
 def play_audio(audio_path):
-    subprocess.run([
-        "ffplay",
-        "-nodisp",
-        "-autoexit",
-        f"{audio_path}"
-    ])
+    subprocess.run(
+        [
+            "ffplay",
+            "-nodisp",
+            "-autoexit",
+            "-loglevel", "quiet",
+            audio_path
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
